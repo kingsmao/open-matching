@@ -1,4 +1,4 @@
-package org.kingsmao.exchange;
+package org.kingsmao.exchange.service;
 
 import org.junit.Test;
 import org.kingsmao.exchange.entity.Order;

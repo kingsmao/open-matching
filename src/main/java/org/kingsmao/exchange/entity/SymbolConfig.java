@@ -18,17 +18,17 @@ public class SymbolConfig {
     public static final int DEFAULT_PRECISION = 16;
 
     /**
-     * 最小精度
+     * 最小精度(16位)
      */
     public static final BigDecimal MIN_PRECISION = new BigDecimal("0.0000000000000001");
 
     /**
-     * 允许的最小成交量
+     * 允许的最小成交量(8位)
      */
     public static BigDecimal MIN_TRADE_VOL = new BigDecimal("0.00000001");
 
     /**
-     * 允许的最小成交价
+     * 允许的最小成交价(8位)
      */
     public static BigDecimal MIN_TRADE_AMOUNT = new BigDecimal("0.00000001");
 

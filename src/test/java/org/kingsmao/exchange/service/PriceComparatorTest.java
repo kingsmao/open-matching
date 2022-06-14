@@ -1,4 +1,4 @@
-package org.kingsmao.exchange;
+package org.kingsmao.exchange.service;
 
 import org.assertj.core.util.Lists;
 import org.junit.Test;
