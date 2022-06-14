@@ -3,7 +3,7 @@ package org.kingsmao.exchange.service.impl;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.log4j.Log4j2;
 import org.kingsmao.exchange.common.MatchDataManager;
-import org.kingsmao.exchange.core.MatchRunnable;
+import org.kingsmao.exchange.core.OrderProvider;
 import org.kingsmao.exchange.disruptor.DisruptorFactory;
 import org.kingsmao.exchange.entity.ConfigSymbol;
 import org.kingsmao.exchange.service.ExchangeService;
@@ -32,7 +32,7 @@ public class ExchangeServiceImpl implements ExchangeService {
     private IConfigSymbolService configSymbolService;
 
     @Autowired
-    private MatchRunnable matchRunnable;
+    private OrderProvider orderProvider;
 
     @Override
     public void start() {
@@ -63,13 +63,14 @@ public class ExchangeServiceImpl implements ExchangeService {
      */
     private void startMatchThread(String symbol) {
         //TODO 初始化币对配置，对应币对账户，深度
-        MatchDataManager matchDataManager = MatchDataManager.init(symbol);
+        MatchDataManager.init(symbol);
         disruptorFactory.initOrderDisruptor(symbol);
+        loadOrder(symbol);
 
 
     }
 
     private void loadOrder(String symbol){
-
+        orderProvider.loadOrder(symbol);
     }
 }

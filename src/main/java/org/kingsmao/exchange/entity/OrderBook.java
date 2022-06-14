@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 @Data
-public class OrderBook implements Iterable<Order> {
+public class OrderBook implements Iterable<ExOrder> {
 
     private Side side;
 
@@ -23,7 +23,7 @@ public class OrderBook implements Iterable<Order> {
      * 价格优先：价格排序按照买卖盘使用相反的价格比较器
      * 时间优先：同一价格下订单列表使用先进先出规则
      */
-    private TreeMap<BigDecimal, LinkedList<Order>> limitBook;
+    private TreeMap<BigDecimal, LinkedList<ExOrder>> limitBook;
 
     public OrderBook(Side side) {
         this.side = side;
@@ -64,7 +64,7 @@ public class OrderBook implements Iterable<Order> {
         return this.limitBook.isEmpty();
     }
 
-    public void addLimitOrder(Order order) {
+    public void addLimitOrder(ExOrder order) {
         BigDecimal limitPrice = order.getPrice();
         if (containsPrice(limitPrice)) {
             appendExistsPrice(limitPrice, order);
@@ -80,8 +80,8 @@ public class OrderBook implements Iterable<Order> {
     /**
      * 添加限价单到已经存在价格深度上，新订单添加到订单列表的末尾
      */
-    public void appendExistsPrice(BigDecimal limitPrice, Order order) {
-        LinkedList<Order> orders = this.limitBook.get(limitPrice);
+    public void appendExistsPrice(BigDecimal limitPrice, ExOrder order) {
+        LinkedList<ExOrder> orders = this.limitBook.get(limitPrice);
         orders.add(order);
         this.limitBook.put(limitPrice, orders);
     }
@@ -89,13 +89,13 @@ public class OrderBook implements Iterable<Order> {
     /**
      * 添加限价单到新的价格深度上
      */
-    public void appendNewPrice(BigDecimal limitPrice, Order order) {
-        LinkedList<Order> orders = new LinkedList<>();
+    public void appendNewPrice(BigDecimal limitPrice, ExOrder order) {
+        LinkedList<ExOrder> orders = new LinkedList<>();
         orders.add(order);
         this.limitBook.put(limitPrice, orders);
     }
 
-    public void addMarketOrder(Order order) {
+    public void addMarketOrder(ExOrder order) {
         throw new IllegalArgumentException("" +
                 "市价单的本质是挂单价为0的现价单，市价单是依据对手盘的价格来成交，所以不存在添加市价单方法");
     }
@@ -110,7 +110,7 @@ public class OrderBook implements Iterable<Order> {
      *
      * @param order
      */
-    public void add(Order order) {
+    public void add(ExOrder order) {
         if (!sameSide(order.getSide())) {
             throw new IllegalArgumentException("新添加订单方向必须与本盘口方向一致");
         }
@@ -120,12 +120,12 @@ public class OrderBook implements Iterable<Order> {
     /**
      * 获取OrderBook队首的第一个订单
      */
-    public Optional<Order> getTopOrder() {
+    public Optional<ExOrder> getTopOrder() {
         if (this.limitBook.isEmpty()) {
             return Optional.absent();
         }
         BigDecimal firstPrice = this.limitBook.firstKey();
-        LinkedList<Order> firstOrders = limitBook.get(firstPrice);
+        LinkedList<ExOrder> firstOrders = limitBook.get(firstPrice);
         if (firstOrders.isEmpty()) {
             return Optional.absent();
         }
@@ -139,12 +139,12 @@ public class OrderBook implements Iterable<Order> {
     /**
      * 从OrderBook中移除订单，订单异常时调用
      */
-    public void removeOrder(Order order) {
+    public void removeOrder(ExOrder order) {
         if (isEmpty()) {
             return;
         }
         BigDecimal priceLevel = order.getPrice();
-        LinkedList<Order> priceOrders = this.limitBook.get(order.getPrice());
+        LinkedList<ExOrder> priceOrders = this.limitBook.get(order.getPrice());
         if (CollectionUtils.isEmpty(priceOrders)) {
             return;
         }
@@ -164,7 +164,7 @@ public class OrderBook implements Iterable<Order> {
      * @param topLimitOrder limitBook中的order（被动单，maker）
      * @param trade         主动单（taker）
      */
-    public void changeOrderItself(final Order topLimitOrder, final Trade trade) {
+    public void changeOrderItself(final ExOrder topLimitOrder, final Trade trade) {
         BigDecimal tradeBaseVolume = trade.getVolume();
         BigDecimal tradeQuoteAmount = tradeBaseVolume.multiply(trade.getPrice());
         topLimitOrder.addFilledQuantity(tradeBaseVolume);
@@ -178,7 +178,7 @@ public class OrderBook implements Iterable<Order> {
      *
      * @param matching
      */
-    public Order changeMarkerOrder(final Trade matching) {
+    public ExOrder changeMarkerOrder(final Trade matching) {
         BigDecimal tradedQuantity = matching.getVolume();
         checkMatchingVolume(tradedQuantity);
         if (this.limitBook.isEmpty()) {
@@ -188,12 +188,12 @@ public class OrderBook implements Iterable<Order> {
         BigDecimal topPriceLevel = limitBook.firstKey();
         //OrderBook队首价格必须和成交价格一致
         Preconditions.checkState(topPriceLevel.equals(matching.getPrice()), "成交订单到价格必须与盘口中的一档价格一致");
-        LinkedList<Order> topLimitOrders = limitBook.get(topPriceLevel);
+        LinkedList<ExOrder> topLimitOrders = limitBook.get(topPriceLevel);
         if (topLimitOrders.isEmpty()) {
             return null;
         }
         //获取队首订单
-        Order topLimitOrder = topLimitOrders.peek();
+        ExOrder topLimitOrder = topLimitOrders.peek();
         //队首订单数量和匹配成交数量比较，比较值对应于：-1 队首数量<成交数量， 0 相等， 1 队首数量>成交数量
         int compareRet = topLimitOrder.getUnfilledQuantity().compareTo(tradedQuantity);
         checkMatchingVolume(compareRet);
@@ -214,15 +214,15 @@ public class OrderBook implements Iterable<Order> {
     }
 
 
-    public Optional<Order> getOrderById(Long OrderId, BigDecimal limitPrice) {
+    public Optional<ExOrder> getOrderById(Long OrderId, BigDecimal limitPrice) {
         if (isEmpty()) {
             return Optional.absent();
         }
-        LinkedList<Order> limitOrders = limitBook.get(limitPrice);
+        LinkedList<ExOrder> limitOrders = limitBook.get(limitPrice);
         if (CollectionUtils.isEmpty(limitOrders)) {
             return Optional.absent();
         }
-        for (Order itemOrder : limitOrders) {
+        for (ExOrder itemOrder : limitOrders) {
             if (itemOrder.getId().equals(OrderId)) {
                 return Optional.of(itemOrder);
             }
@@ -231,8 +231,8 @@ public class OrderBook implements Iterable<Order> {
     }
 
     @Override
-    public Iterator<Order> iterator() {
-        class MyIterator implements Iterator<Order> {
+    public Iterator<ExOrder> iterator() {
+        class MyIterator implements Iterator<ExOrder> {
             BigDecimal priceLevel;
 
             /** 一个priceLevel对应的List<Order>中的位置 */
@@ -248,7 +248,7 @@ public class OrderBook implements Iterable<Order> {
             @Override
             public boolean hasNext() {
                 if (priceLevel != null && limitBook.containsKey(priceLevel)) {
-                    List<Order> orderList = limitBook.get(priceLevel);
+                    List<ExOrder> orderList = limitBook.get(priceLevel);
                     if (index < orderList.size()) {
                         return true;
                     }
@@ -257,12 +257,12 @@ public class OrderBook implements Iterable<Order> {
             }
 
             @Override
-            public Order next() {
+            public ExOrder next() {
                 if (hasNext()) {
-                    List<Order> orderList = limitBook.get(priceLevel);
+                    List<ExOrder> orderList = limitBook.get(priceLevel);
                     int orderSize = orderList.size();
                     if (index < orderSize) {
-                        Order o = orderList.get(index);
+                        ExOrder o = orderList.get(index);
                         if (index == orderSize - 1) {
                             priceLevel = limitBook.higherKey(priceLevel);
                             index = 0;

@@ -50,9 +50,9 @@ public class Trade {
 
     private Date ctime;
 
-    private Order takerOrder;
+    private ExOrder takerOrder;
 
-    private Order makerOrder;
+    private ExOrder makerOrder;
 
     /**
      * 订单流转的唯一标识

@@ -3,7 +3,7 @@ package org.kingsmao.exchange.common;
 import com.google.common.collect.Maps;
 import lombok.Data;
 import org.apache.rocketmq.common.message.Message;
-import org.kingsmao.exchange.entity.Order;
+import org.kingsmao.exchange.entity.ExOrder;
 import org.kingsmao.exchange.entity.OrderBook;
 import org.kingsmao.exchange.entity.SymbolConfig;
 import org.kingsmao.exchange.enums.Side;
@@ -53,7 +53,7 @@ public class MatchDataManager {
     /**
      * 存放订单
      */
-    private TreeSet<Order> roundOrders;
+    private TreeSet<ExOrder> roundOrders;
 
     /**
      * 每次拉取订单的起始订单,分页使用 数据库加载时用id分页
@@ -101,7 +101,7 @@ public class MatchDataManager {
      * @param symbol 撮合币对
      * @return
      */
-    public static MatchDataManager init(String symbol) {
+    public static void init(String symbol) {
         MatchDataManager manager = new MatchDataManager();
         manager.setSymbolConfig(new SymbolConfig());
         manager.setOrderBookBuy(new OrderBook(Side.BUY));
@@ -113,7 +113,6 @@ public class MatchDataManager {
         manager.setRoaringBitmap(new Roaring64NavigableMap());
         manager.setCancelMap(new ConcurrentHashMap());
         set(symbol, manager);
-        return manager;
     }
 
     private static void set(String symbol, MatchDataManager manager) {
@@ -137,11 +136,9 @@ public class MatchDataManager {
     }
 
     /**
-     * 获取本轮订单队首订单
-     *
-     * @return
+     * 弹出本轮订单队首订单
      */
-    public Order takerOrder() {
+    public ExOrder pollFirstOrder() {
         if (roundOrders.isEmpty()) {
             return null;
         }

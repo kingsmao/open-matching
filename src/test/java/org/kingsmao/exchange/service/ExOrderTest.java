@@ -1,7 +1,7 @@
 package org.kingsmao.exchange.service;
 
 import org.junit.Test;
-import org.kingsmao.exchange.entity.Order;
+import org.kingsmao.exchange.entity.ExOrder;
 import org.kingsmao.exchange.enums.OrderType;
 import org.kingsmao.exchange.enums.Side;
 
@@ -10,13 +10,13 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class OrderTest {
+public class ExOrderTest {
 
     @Test
     public void add_filled_quantity() {
         BigDecimal init = new BigDecimal("100");
         BigDecimal filled = new BigDecimal("34");
-        Order order = new Order();
+        ExOrder order = new ExOrder();
         order.setVolume(init);
         order.setSide(Side.SELL);
 
@@ -27,7 +27,7 @@ public class OrderTest {
 
     @Test
     public void limit_order_not_filled() {
-        Order order = new Order();
+        ExOrder order = new ExOrder();
         order.setVolume(new BigDecimal("100"));
         order.setSide(Side.SELL);
 
@@ -36,7 +36,7 @@ public class OrderTest {
 
     @Test
     public void traded_quantity_should_greater_zero() {
-        Order order = new Order();
+        ExOrder order = new ExOrder();
 
         assertThatThrownBy(() -> {
             order.addFilledQuantity(new BigDecimal("-234"));
@@ -49,7 +49,7 @@ public class OrderTest {
 
     @Test
     public void limit_order_filled_test(){
-        Order order = new Order();
+        ExOrder order = new ExOrder();
         order.setVolume(new BigDecimal("100"));
         order.setSide(Side.SELL);
         order.setType(OrderType.LIMIT.getValue());
@@ -64,7 +64,7 @@ public class OrderTest {
 
     @Test
     public void buy_price_crosses_at_lower_quote(){
-        Order order = new Order();
+        ExOrder order = new ExOrder();
         order.setPrice(new BigDecimal("100"));
         order.setSide(Side.BUY);
 
@@ -80,7 +80,7 @@ public class OrderTest {
 
     @Test
     public void sell_price_crosses_at_higher_quote(){
-        Order order = new Order();
+        ExOrder order = new ExOrder();
         order.setPrice(new BigDecimal("100"));
         order.setSide(Side.SELL);
 
