@@ -25,29 +25,31 @@ public class OrderProvider {
     private OrderEventPublisher publisher;
 
 
-    public void loadOrder(String symbol){
-        log.info("开始加载{}委托订单",symbol);
+    public void loadOrder(String symbol) {
+        log.info("开始加载{}委托订单", symbol);
         Long lastOrderId = exOrderService.getLastOrderId(symbol);
         MatchDataManager matchDataManager = MatchDataManager.get(symbol);
 
         /**
-         * 死循环，不断从DB中加载委托订单，将订单打到MatchDataManager缓存中
+         * 死循环，不断从DB中加载委托订单，将订单打到MatchDataManager缓存中，然后再通过disruptor打到撮合引擎中
+         * DB/MQ --> cache --> disruptor --> 撮合引擎
          */
         for (; ; ) {
             //撮合启动的时候内存中是没有订单的，需要从DB/MQ中加载订单，下一个for循环就会有订单，订单将会通过disruptor打到撮合引擎中
+            //加载一批（5000条）处理一批，处理完再加载下一批
             ExOrder order = matchDataManager.pollFirstOrder();
-            if (cacheHasOrder(order)) {
+            if (matchDataManagerHasOrder(order)) {
                 //从内存中取到委托订单，通过disruptor分发给撮合引擎
-                publisher.publish(symbol,order);
+                publisher.publish(symbol, order);
                 continue;
             }
             //从DB/MQ中搂取订单推到内存中
-            pushOrderToCache(matchDataManager,symbol,lastOrderId);
+            pushOrderToCache(matchDataManager, symbol, lastOrderId);
             sleep(50);
         }
     }
 
-    private void pushOrderToCache(MatchDataManager matchDataManager,String symbol,Long lastOrderId){
+    private void pushOrderToCache(MatchDataManager matchDataManager, String symbol, Long lastOrderId) {
         Long loadInitOffset = matchDataManager.getLoadInitOffset();
         TreeSet<ExOrder> roundOrders = matchDataManager.getRoundOrders();
         roundOrders.clear();
@@ -59,6 +61,7 @@ public class OrderProvider {
             if (matchDataManager.isRepeat(exOrder.getId())) {
                 continue;
             }
+            exOrder.setSymbol(symbol);
             loadInitOffset = exOrder.getId();
             if (exOrder.getStatus() == OrderStatus.PENDING_CANCEL.getValue()) {
                 pendingCancelOrders.add(exOrder);
@@ -79,7 +82,7 @@ public class OrderProvider {
     }
 
 
-    private boolean cacheHasOrder(ExOrder order){
+    private boolean matchDataManagerHasOrder(ExOrder order) {
         return null != order;
     }
 

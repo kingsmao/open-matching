@@ -121,7 +121,7 @@ public class ExOrder implements Cloneable {
      * 是否为取消单
      */
     @TableField(exist = false)
-    private boolean isCancel = false;
+    private boolean isCancel = Boolean.FALSE;
 
     /**
      * 取消单列表

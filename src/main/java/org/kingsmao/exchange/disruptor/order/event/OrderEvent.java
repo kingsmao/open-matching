@@ -23,7 +23,7 @@ public class OrderEvent {
     /**
      * 流水线处理日志
      */
-    private String flowLog = "";
+    private String pipelineLog = "";
 
     /**
      * 当前线程币对
@@ -34,7 +34,7 @@ public class OrderEvent {
         this.executedOrder = null;
         this.orderEventType = null;
         this.message = "";
-        this.flowLog = "";
+        this.pipelineLog = "";
         this.symbol = "";
     }
 }

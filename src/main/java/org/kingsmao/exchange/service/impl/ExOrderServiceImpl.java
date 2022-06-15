@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static org.kingsmao.exchange.common.Utils.UN_FILLED_ORDER;
+
 /**
  * <p>
  * 委托订单 服务实现类
@@ -20,9 +22,6 @@ import java.util.List;
  */
 @Service
 public class ExOrderServiceImpl extends ServiceImpl<ExOrderMapper, ExOrder> implements IExOrderService {
-
-    private static final List<Integer> UN_FILLED_ORDER = Lists.newArrayList(
-            OrderStatus.INIT.getValue(),OrderStatus.NEW.getValue(),OrderStatus.PART_FILLED.getValue(),OrderStatus.PENDING_CANCEL.getValue());
 
     @Override
     public Long getLastOrderId(String symbol) {
