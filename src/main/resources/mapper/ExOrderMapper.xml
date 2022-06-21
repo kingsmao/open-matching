@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.kingsmao.exchange.repository.ExOrderMapper" >
+  <resultMap id="BaseResultMap" type="org.kingsmao.exchange.entity.ExOrder" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="user_id" property="userId" jdbcType="INTEGER" />
+    <result column="side" property="side" jdbcType="CHAR" />
+    <result column="price" property="price" jdbcType="DECIMAL" />
+    <result column="volume" property="volume" jdbcType="DECIMAL" />
+    <result column="fee_rate_maker" property="feeRateMaker" jdbcType="DECIMAL" />
+    <result column="fee_rate_taker" property="feeRateTaker" jdbcType="DECIMAL" />
+    <result column="fee" property="fee" jdbcType="DECIMAL" />
+    <result column="deal_volume" property="dealVolume" jdbcType="DECIMAL" />
+    <result column="deal_money" property="dealMoney" jdbcType="DECIMAL" />
+    <result column="avg_price" property="avgPrice" jdbcType="DECIMAL" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="ctime" property="ctime" jdbcType="TIMESTAMP" />
+    <result column="mtime" property="mtime" jdbcType="TIMESTAMP" />
+    <result column="source" property="source" jdbcType="TINYINT" />
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    id, user_id, side, price, volume, fee_rate_maker, fee_rate_taker, fee,
+    deal_volume, deal_money, avg_price, status, type, ctime, mtime, source
+  </sql>
+
+  <update id="updateOrderStatusToCancel">
+    update ${tableName}
+    set `status` = 5
+    where `status` = 0
+  </update>
+
+</mapper>

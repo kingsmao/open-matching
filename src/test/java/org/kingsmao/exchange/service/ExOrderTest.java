@@ -1,6 +1,7 @@
 package org.kingsmao.exchange.service;
 
 import org.junit.Test;
+import org.kingsmao.exchange.common.MatchDataManager;
 import org.kingsmao.exchange.entity.ExOrder;
 import org.kingsmao.exchange.enums.OrderType;
 import org.kingsmao.exchange.enums.Side;

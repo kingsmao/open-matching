@@ -3,12 +3,13 @@ package org.kingsmao.exchange.entity;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import java.time.LocalDateTime;
 import java.io.Serializable;
+import java.util.Date;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.kingsmao.exchange.enums.Side;
 
 /**
  * <p>
@@ -48,7 +49,7 @@ public class ExTrade implements Serializable {
     /**
      * 主动单方向
      */
-    private String trendSide;
+    private Side trendSide;
 
     /**
      * 买方用户id
@@ -83,22 +84,21 @@ public class ExTrade implements Serializable {
     /**
      * 创建时间
      */
-    private LocalDateTime ctime;
+    private Date ctime;
 
     /**
      * 最后更新时间
      */
-    private LocalDateTime mtime;
+    private Date mtime;
 
     /**
-     * 买单类型 1:常规订单，2 杠杆订单
+     * 订单流转的唯一标识
      */
-    private Integer buyType;
+    private String tradeNonce;
 
-    /**
-     * 卖单类型 1:常规订单，2 杠杆订单
-     */
-    private Integer sellType;
+    private ExOrder takerOrder;
+
+    private ExOrder makerOrder;
 
 
 }

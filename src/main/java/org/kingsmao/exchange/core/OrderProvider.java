@@ -27,56 +27,56 @@ public class OrderProvider {
 
     public void loadOrder(String symbol) {
         log.info("开始加载{}委托订单", symbol);
-        Long lastOrderId = exOrderService.getLastOrderId(symbol);
         MatchDataManager matchDataManager = MatchDataManager.get(symbol);
-
+        Long loadFromOrderId = exOrderService.getFirstUnFilledOrderId(symbol);
+        matchDataManager.setLoadFromOrderId(loadFromOrderId);
         /**
          * 死循环，不断从DB中加载委托订单，将订单打到MatchDataManager缓存中，然后再通过disruptor打到撮合引擎中
-         * DB/MQ --> cache --> disruptor --> 撮合引擎
+         * DB --> cache --> disruptor --> 撮合引擎
          */
         for (; ; ) {
-            //撮合启动的时候内存中是没有订单的，需要从DB/MQ中加载订单，下一个for循环就会有订单，订单将会通过disruptor打到撮合引擎中
+            //撮合启动的时候内存中是没有订单的，需要从DB中加载订单，下一个for循环就会有订单，订单将会通过disruptor打到撮合引擎中
             //加载一批（5000条）处理一批，处理完再加载下一批
-            ExOrder order = matchDataManager.pollFirstOrder();
+            ExOrder order = matchDataManager.pollOrder();
             if (matchDataManagerHasOrder(order)) {
                 //从内存中取到委托订单，通过disruptor分发给撮合引擎
                 publisher.publish(symbol, order);
                 continue;
             }
-            //从DB/MQ中搂取订单推到内存中
-            pushOrderToCache(matchDataManager, symbol, lastOrderId);
+            //从DB中搂取订单推到内存中
+            pushOrderToCache(matchDataManager, symbol);
             sleep(50);
         }
     }
 
-    private void pushOrderToCache(MatchDataManager matchDataManager, String symbol, Long lastOrderId) {
-        Long loadInitOffset = matchDataManager.getLoadInitOffset();
+    private void pushOrderToCache(MatchDataManager matchDataManager, String symbol) {
+        Long loadFromOrderId = matchDataManager.getLoadFromOrderId();
         TreeSet<ExOrder> roundOrders = matchDataManager.getRoundOrders();
         roundOrders.clear();
         TreeSet<ExOrder> pendingCancelOrders = new TreeSet<>(new OrderOffsetComparator());//要取消的委托单
         //从DB中搂订单
-        List<ExOrder> exOrders = exOrderService.loadUnFilledOrder(symbol, lastOrderId);
+        List<ExOrder> exOrders = exOrderService.loadUnFilledOrder(symbol, loadFromOrderId);
         for (ExOrder exOrder : exOrders) {
             //订单防重
             if (matchDataManager.isRepeat(exOrder.getId())) {
                 continue;
             }
             exOrder.setSymbol(symbol);
-            loadInitOffset = exOrder.getId();
+            loadFromOrderId = exOrder.getId();
             if (exOrder.getStatus() == OrderStatus.PENDING_CANCEL.getValue()) {
                 pendingCancelOrders.add(exOrder);
                 continue;
             }
             roundOrders.add(exOrder);
         }
-        matchDataManager.setLoadInitOffset(loadInitOffset);
+        matchDataManager.setLoadFromOrderId(loadFromOrderId);
         //待撤销订单批量处理
         if (CollectionUtils.isNotEmpty(pendingCancelOrders)) {
             ExOrder cancelOrder = new ExOrder();
             cancelOrder.setSymbol(symbol);
             cancelOrder.setCancel(Boolean.TRUE);
             cancelOrder.setCancelOrders(pendingCancelOrders);
-            cancelOrder.setId(loadInitOffset);
+            cancelOrder.setId(loadFromOrderId);
             roundOrders.add(cancelOrder);
         }
     }

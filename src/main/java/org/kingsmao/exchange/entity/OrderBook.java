@@ -1,6 +1,5 @@
 package org.kingsmao.exchange.entity;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
@@ -8,10 +7,7 @@ import org.kingsmao.exchange.common.PriceComparator;
 import org.kingsmao.exchange.enums.Side;
 
 import java.math.BigDecimal;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 
 @Data
 public class OrderBook implements Iterable<ExOrder> {
@@ -119,15 +115,17 @@ public class OrderBook implements Iterable<ExOrder> {
 
     /**
      * 获取OrderBook队首的第一个订单
+     *  买盘：返回价格最大订单
+     *  买盘：返回价格最小订单
      */
     public Optional<ExOrder> getTopOrder() {
         if (this.limitBook.isEmpty()) {
-            return Optional.absent();
+            return Optional.empty();
         }
         BigDecimal firstPrice = this.limitBook.firstKey();
         LinkedList<ExOrder> firstOrders = limitBook.get(firstPrice);
         if (firstOrders.isEmpty()) {
-            return Optional.absent();
+            return Optional.empty();
         }
         return Optional.of(firstOrders.get(0));
     }
@@ -164,7 +162,7 @@ public class OrderBook implements Iterable<ExOrder> {
      * @param topLimitOrder limitBook中的order（被动单，maker）
      * @param trade         主动单（taker）
      */
-    public void changeOrderItself(final ExOrder topLimitOrder, final Trade trade) {
+    public void changeOrderItself(final ExOrder topLimitOrder, final ExTrade trade) {
         BigDecimal tradeBaseVolume = trade.getVolume();
         BigDecimal tradeQuoteAmount = tradeBaseVolume.multiply(trade.getPrice());
         topLimitOrder.addFilledQuantity(tradeBaseVolume);
@@ -178,7 +176,7 @@ public class OrderBook implements Iterable<ExOrder> {
      *
      * @param matching
      */
-    public ExOrder changeMarkerOrder(final Trade matching) {
+    public ExOrder changeMakerOrder(final ExTrade matching) {
         BigDecimal tradedQuantity = matching.getVolume();
         checkMatchingVolume(tradedQuantity);
         if (this.limitBook.isEmpty()) {
@@ -216,18 +214,18 @@ public class OrderBook implements Iterable<ExOrder> {
 
     public Optional<ExOrder> getOrderById(Long OrderId, BigDecimal limitPrice) {
         if (isEmpty()) {
-            return Optional.absent();
+            return Optional.empty();
         }
         LinkedList<ExOrder> limitOrders = limitBook.get(limitPrice);
         if (CollectionUtils.isEmpty(limitOrders)) {
-            return Optional.absent();
+            return Optional.empty();
         }
         for (ExOrder itemOrder : limitOrders) {
             if (itemOrder.getId().equals(OrderId)) {
                 return Optional.of(itemOrder);
             }
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     @Override

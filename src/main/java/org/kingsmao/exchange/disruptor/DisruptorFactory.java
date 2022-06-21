@@ -12,6 +12,7 @@ import org.kingsmao.exchange.disruptor.order.event.OrderEvent;
 import org.kingsmao.exchange.disruptor.order.event.OrderEventFactory;
 import org.kingsmao.exchange.disruptor.order.processor.MatchProcessor;
 import org.kingsmao.exchange.disruptor.order.processor.ValidateProcessor;
+import org.kingsmao.exchange.disruptor.settlement.event.SettlementEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,19 +24,27 @@ public class DisruptorFactory {
 
     private static final int RINGBUFFER_SIZE = 1024;
 
-    public static final Map<String, DefaultDisruptorConfig<OrderEvent>> SymbolDisruptorFactory = Maps.newConcurrentMap();
+    public static final Map<String, DefaultDisruptorConfig<OrderEvent>> ORDER_DISRUPTOR_MANAGER = Maps.newConcurrentMap();
+
+    public static final Map<String, DefaultDisruptorConfig<SettlementEvent>> SETTLEMENT_DISRUPTOR_MANAGER = Maps.newConcurrentMap();
 
     @Autowired
     private MatchProcessor matchProcessor;
 
     @Autowired
     private ValidateProcessor validateProcessor;
+
+    public static DefaultDisruptorConfig<OrderEvent> getDefaultDisruptorConfig(String symbol){
+        Validate.notBlank(symbol);
+        return ORDER_DISRUPTOR_MANAGER.get(symbol);
+    }
+
     /**
      * 订单输入处理链
      */
     public void initOrderDisruptor(String symbol) {
         Validate.notBlank(symbol);
-        DefaultDisruptorConfig<OrderEvent> defaultDisruptorConfig = SymbolDisruptorFactory.get(symbol);
+        DefaultDisruptorConfig<OrderEvent> defaultDisruptorConfig = ORDER_DISRUPTOR_MANAGER.get(symbol);
         if (null != defaultDisruptorConfig) {
             return;
         }
@@ -49,12 +58,17 @@ public class DisruptorFactory {
         defaultDisruptorConfig.setThreadName("Order_".concat(symbol));
         defaultDisruptorConfig.setWaitStrategyType(WaitStrategyType.BLOCKING);
         defaultDisruptorConfig.init();
-        SymbolDisruptorFactory.put(symbol,defaultDisruptorConfig);
+        ORDER_DISRUPTOR_MANAGER.put(symbol,defaultDisruptorConfig);
     }
 
-    public static DefaultDisruptorConfig<OrderEvent> getDefaultDisruptorConfig(String symbol){
+    public void initSettlementDisruptor(String symbol){
         Validate.notBlank(symbol);
-        return SymbolDisruptorFactory.get(symbol);
+        DefaultDisruptorConfig<SettlementEvent> defaultDisruptorConfig = SETTLEMENT_DISRUPTOR_MANAGER.get(symbol);
+        if (null != defaultDisruptorConfig) {
+            return;
+        }
+
+
     }
 
 

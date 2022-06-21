@@ -64,4 +64,30 @@ public class Utils {
     public static BigDecimal divedToPow(BigDecimal valuePow, BigDecimal divisorPow) {
         return valuePow.divide(divisorPow, SymbolConfig.DEFAULT_PRECISION, BigDecimal.ROUND_HALF_EVEN);
     }
+
+    public static int Guid = 100;
+
+    public static String getGuid() {
+        Guid++;
+        long now = System.currentTimeMillis();
+        String info = now + "";
+        int ran = 0;
+        if (Guid > 999) {
+            Guid = 100;
+        }
+        ran = Guid;
+        return info + ran;
+    }
+
+
+    public static void main(String[] args) {
+        for (int i = 0; i < 10; i++) {
+            System.out.println(getGuid());
+            try {
+                Thread.sleep(1000L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

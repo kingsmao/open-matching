@@ -8,6 +8,7 @@ import org.kingsmao.exchange.disruptor.DisruptorFactory;
 import org.kingsmao.exchange.entity.ConfigSymbol;
 import org.kingsmao.exchange.service.ExchangeService;
 import org.kingsmao.exchange.service.IConfigSymbolService;
+import org.kingsmao.exchange.service.IExOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +34,9 @@ public class ExchangeServiceImpl implements ExchangeService {
 
     @Autowired
     private OrderProvider orderProvider;
+
+    @Autowired
+    private IExOrderService exOrderService;
 
     @Override
     public void start() {
@@ -65,12 +69,11 @@ public class ExchangeServiceImpl implements ExchangeService {
         //TODO 初始化币对配置，对应币对账户，深度
         MatchDataManager.init(symbol);
         disruptorFactory.initOrderDisruptor(symbol);
-        loadOrder(symbol);
 
+        //将撮合未启动状态下进行委托的订单取消
+        exOrderService.cancelUnLoadOrder(symbol);
 
-    }
-
-    private void loadOrder(String symbol){
+        //开始加载数据库订单
         orderProvider.loadOrder(symbol);
     }
 }

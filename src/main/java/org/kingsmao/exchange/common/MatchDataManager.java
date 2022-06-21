@@ -56,9 +56,9 @@ public class MatchDataManager {
     private TreeSet<ExOrder> roundOrders;
 
     /**
-     * 每次拉取订单的起始订单,分页使用 数据库加载时用id分页
+     * 加载订单的起始id
      */
-    private Long loadInitOffset;
+    private Long loadFromOrderId;
 
     /**
      * 去重队列，存放 orderId 用于去重
@@ -107,7 +107,7 @@ public class MatchDataManager {
         manager.setOrderBookBuy(new OrderBook(Side.BUY));
         manager.setOrderBookSell(new OrderBook(Side.SELL));
         manager.setRoundOrders(new TreeSet<>(new OrderOffsetComparator()));
-        manager.setLoadInitOffset(0L);
+        manager.setLoadFromOrderId(0L);
         manager.setLastOffset(0L);
         manager.setRebuildEnd(0);
         manager.setRoaringBitmap(new Roaring64NavigableMap());
@@ -138,7 +138,7 @@ public class MatchDataManager {
     /**
      * 弹出本轮订单队首订单
      */
-    public ExOrder pollFirstOrder() {
+    public ExOrder pollOrder() {
         if (roundOrders.isEmpty()) {
             return null;
         }

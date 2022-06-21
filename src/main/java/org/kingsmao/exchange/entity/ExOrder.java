@@ -1,14 +1,8 @@
 package org.kingsmao.exchange.entity;
 
-import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import java.time.LocalDateTime;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.TreeSet;
-
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.google.common.base.Preconditions;
 import lombok.Data;
@@ -16,6 +10,10 @@ import lombok.EqualsAndHashCode;
 import lombok.extern.log4j.Log4j2;
 import org.kingsmao.exchange.enums.OrderType;
 import org.kingsmao.exchange.enums.Side;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.TreeSet;
 
 /**
  * <p>
@@ -71,12 +69,14 @@ public class ExOrder implements Cloneable {
     /**
      * 成交数量
      */
-    private BigDecimal dealVolume = BigDecimal.ZERO;;
+    private BigDecimal dealVolume = BigDecimal.ZERO;
+    ;
 
     /**
      * 已成交金额
      */
-    private BigDecimal dealMoney = BigDecimal.ZERO;;
+    private BigDecimal dealMoney = BigDecimal.ZERO;
+    ;
 
     /**
      * 成交均价
@@ -160,6 +160,7 @@ public class ExOrder implements Cloneable {
     }
 
     /**
+     * 校验是否已全部成交
      * 现价单：挂单数量
      * 市价单：
      *  买方向：挂单金额
