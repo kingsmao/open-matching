@@ -67,7 +67,10 @@ public class ExchangeServiceImpl implements ExchangeService {
      */
     private void startMatchThread(String symbol) {
         //TODO 初始化币对配置，对应币对账户，深度
+
+
         MatchDataManager.init(symbol);
+
         disruptorFactory.initOrderDisruptor(symbol);
 
         //将撮合未启动状态下进行委托的订单取消

@@ -13,5 +13,7 @@ public class SettlementProcessor implements EventHandler<SettlementEvent> {
     public void onEvent(SettlementEvent settlementEvent, long sequence, boolean endOfBatch) throws Exception {
         log.info("SettlementProcessor::onEvent ---> settlementEvent:{},sequence:{},endOfBatch:{}", settlementEvent, sequence, endOfBatch);
 
+
+
     }
 }

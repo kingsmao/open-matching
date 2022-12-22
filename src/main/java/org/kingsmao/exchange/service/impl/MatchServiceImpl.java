@@ -162,8 +162,7 @@ public class MatchServiceImpl implements MatchService {
         return createMarketTrade(order, counterOrder, counterPrice);
     }
 
-    //TODO 为什么要加锁？
-    private synchronized Optional<ExOrder> tryMatch(ExOrder order, OrderBook counterBook) {
+    private Optional<ExOrder> tryMatch(ExOrder order, OrderBook counterBook) {
         if (order.isFilled()) {
             return Optional.of(order);
         }
